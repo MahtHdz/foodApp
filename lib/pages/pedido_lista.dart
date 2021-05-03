@@ -1,13 +1,15 @@
-import '../models/productos_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:yummy_app/models/productos_model.dart';
 import 'package:fancy_dialog/FancyAnimation.dart';
 import 'package:fancy_dialog/FancyGif.dart';
 import 'package:fancy_dialog/FancyTheme.dart';
 import 'package:fancy_dialog/fancy_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Cart extends StatefulWidget {
-  final List<itemModel> _cart;
+  final List<ProductosModel> _cart;
 
   Cart(this._cart);
 
@@ -21,9 +23,9 @@ class _CartState extends State<Cart> {
   var _firstScroll = true;
   bool _enabled = false;
 
-  List<itemModel> _cart;
+  List<ProductosModel> _cart;
 
-  Container pagoTotal(List<itemModel> _cart) {
+  Container pagoTotal(List<ProductosModel> _cart) {
     return Container(
       alignment: Alignment.centerRight,
       padding: EdgeInsets.only(left: 120),
@@ -32,8 +34,6 @@ class _CartState extends State<Cart> {
       color: Colors.grey[200],
       child: Row(
         children: <Widget>[
-          // Text("Total:  \$${valorTotal(_cart)}",
-          //Text("Total:  ",
           Text("Total:  \$${valorTotal(_cart)}",
               style: new TextStyle(
                   fontWeight: FontWeight.bold,
@@ -44,11 +44,11 @@ class _CartState extends State<Cart> {
     );
   }
 
-  String valorTotal(List<itemModel> listaProductos) {
+  String valorTotal(_cart) {
     double total = 0.0;
 
-    for (int i = 0; i < listaProductos.length; i++) {
-      total = total + listaProductos[i].price * listaProductos[i].quantity;
+    for (int i = 0; i < _cart.length; i++) {
+      total = total + _cart[i].precio * _cart[i].cantidad;
     }
     return total.toStringAsFixed(2);
   }
@@ -101,9 +101,8 @@ class _CartState extends State<Cart> {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: _cart.length,
                 itemBuilder: (context, index) {
-                  final String imagen = _cart[index].image;
+                  //final String imagen = _cart[index].image;
                   var item = _cart[index];
-                  //item.quantity = 0;
                   return Column(
                     children: <Widget>[
                       Padding(
@@ -113,16 +112,23 @@ class _CartState extends State<Cart> {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                Container(
+                                Expanded(
+                                    child: Container(
                                   width: 150,
                                   height: 150,
-                                  child: new Image.asset(
-                                      "assets/images/$imagen",
-                                      fit: BoxFit.contain),
-                                ),
+                                  child: CachedNetworkImage(
+                                      imageUrl: '${item.imagen}',
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) {
+                                        return Center(
+                                            child: CupertinoActivityIndicator(
+                                          radius: 15,
+                                        ));
+                                      }),
+                                )),
                                 Column(
                                   children: <Widget>[
-                                    Text(item.name,
+                                    Text(item.nombre,
                                         style: new TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16.0,
@@ -158,13 +164,14 @@ class _CartState extends State<Cart> {
                                               IconButton(
                                                 icon: Icon(Icons.remove),
                                                 onPressed: () {
-                                                  _removeProduct(index);
-                                                  valorTotal(_cart);
-                                                  // print(_cart);
+                                                  setState(() {
+                                                    _cart[index].cantidad--;
+                                                    valorTotal(_cart);
+                                                  });
                                                 },
                                                 color: Colors.yellow,
                                               ),
-                                              Text('${_cart[index].quantity}',
+                                              Text('${_cart[index].cantidad}',
                                                   style: new TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -173,11 +180,12 @@ class _CartState extends State<Cart> {
                                               IconButton(
                                                 icon: Icon(Icons.add),
                                                 onPressed: () {
-                                                  _addProduct(index);
-                                                  valorTotal(_cart);
+                                                  setState(() {
+                                                    _cart[index].cantidad++;
+                                                    valorTotal(_cart);
+                                                  });
                                                 },
-                                                color: Colors
-                                                    .yellow, // print(_cart);
+                                                color: Colors.yellow,
                                               ),
                                               SizedBox(
                                                 height: 8.0,
@@ -192,7 +200,7 @@ class _CartState extends State<Cart> {
                                 SizedBox(
                                   width: 38.0,
                                 ),
-                                Text(item.price.toString(),
+                                Text(item.precio.toString(),
                                     style: new TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 24.0,
@@ -228,13 +236,14 @@ class _CartState extends State<Cart> {
                     showDialog(
                         context: context,
                         builder: (BuildContext context) => FancyDialog(
-                              title: "ACEPTA PAGAR LA COMPRA",
-                              descreption: "Bien pues pague :), Click OK",
+                              title: "Aceptar compra",
+                              descreption: "Enviar por WhatsApp",
                               animationType: FancyAnimation.BOTTOM_TOP,
                               theme: FancyTheme.FANCY,
-                              gifPath:
-                                  FancyGif.MOVE_FORWARD, //'./assets/walp.png',
-                              okFun: () => {print("it's working :)")},
+                              gifPath: './assets/images/buy2.gif',
+                              okFun: () => {
+                                msgListaPedido(),
+                              },
                             ))
                   },
                   shape: new RoundedRectangleBorder(
@@ -247,15 +256,34 @@ class _CartState extends State<Cart> {
     );
   }
 
-  _addProduct(int index) {
-    setState(() {
-      _cart[index].quantity++;
-    });
-  }
+  void msgListaPedido() async {
+    String pedido = "";
+    String fecha = DateTime.now().toString();
+    pedido = pedido + "FECHA:" + fecha.toString();
+    pedido = pedido + "\n";
+    pedido = pedido + "MEGA DESCUENTOS A DOMICILIO";
+    pedido = pedido + "\n";
+    pedido = pedido + "CLIENTE: FLUTTER - DART";
+    pedido = pedido + "\n";
+    pedido = pedido + "_____________";
 
-  _removeProduct(int index) {
-    setState(() {
-      _cart[index].quantity--;
-    });
+    for (int i = 0; i < _cart.length; i++) {
+      pedido = '$pedido' +
+          "\n" +
+          "Producto : " +
+          _cart[i].nombre +
+          "\n" +
+          "Cantidad: " +
+          _cart[i].cantidad.toString() +
+          "\n" +
+          "Precio : " +
+          _cart[i].precio.toString() +
+          "\n" +
+          "\_________________________\n";
+    }
+    pedido = pedido + "TOTAL:" + valorTotal(_cart);
+
+    //await launch("https://wa.me/${57sunumeroaqui}?text=$pedido");
+    
   }
 }
