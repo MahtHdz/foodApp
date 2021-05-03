@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Cart extends StatefulWidget {
-  final List<ProductosModel> _cart;
+  final List<itemModel> _cart;
 
   Cart(this._cart);
 
@@ -21,9 +21,9 @@ class _CartState extends State<Cart> {
   var _firstScroll = true;
   bool _enabled = false;
 
-  List<ProductosModel> _cart;
+  List<itemModel> _cart;
 
-  Container pagoTotal(List<ProductosModel> _cart) {
+  Container pagoTotal(List<itemModel> _cart) {
     return Container(
       alignment: Alignment.centerRight,
       padding: EdgeInsets.only(left: 120),
@@ -44,7 +44,7 @@ class _CartState extends State<Cart> {
     );
   }
 
-  String valorTotal(List<ProductosModel> listaProductos) {
+  String valorTotal(List<itemModel> listaProductos) {
     double total = 0.0;
 
     for (int i = 0; i < listaProductos.length; i++) {

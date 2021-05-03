@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MenuScreen());
 }
 
-class MyApp extends StatelessWidget {
+class MenuScreen extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
-      home: MyHomePage(title: 'App Compras'),
+      home: MyHomePage(title: 'Selecciona un platillo'),
     );
   }
 }
@@ -32,9 +32,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<ProductosModel> _productosModel = List<ProductosModel>();
+  List<itemModel> _itemModel = <itemModel>[];
 
-  List<ProductosModel> _listaCarro = List<ProductosModel>();
+  List<itemModel> _listaCarro = <itemModel>[];
 
   @override
   void initState() {
@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Colors.white,
                   ),
                   onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-                    builder: (BuildContext context) => OtraPagina(),
+                    builder: (BuildContext context) => MenuScreen(),
                   )),
                 ),
                 new Divider(),
@@ -198,10 +198,10 @@ class _MyHomePageState extends State<MyHomePage> {
       padding: const EdgeInsets.all(4.0),
       gridDelegate:
           SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-      itemCount: _productosModel.length,
+      itemCount: _itemModel.length,
       itemBuilder: (context, index) {
-        final String imagen = _productosModel[index].image;
-        var item = _productosModel[index];
+        final String imagen = _itemModel[index].image;
+        var item = _itemModel[index];
         return Card(
             elevation: 4.0,
             child: Stack(
@@ -277,43 +277,43 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _productosDb() {
-    var list = <ProductosModel>[
-      ProductosModel(
+    var list = <itemModel>[
+      itemModel(
         name: 'Burguer King',
         image: 'food1.png',
         price: 12,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Pizza Italiana',
         image: 'food2.png',
         price: 17,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Carne..',
         image: 'food3.png',
         price: 25,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Burger',
         image: 'food4.png',
         price: 19,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Asado',
         image: 'food5.png',
         price: 11,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Food Tailandesa',
         image: 'food6.png',
         price: 14,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Pizza Big',
         image: 'food7.png',
         price: 15,
       ),
-      ProductosModel(
+      itemModel(
         name: 'Empanas',
         image: 'food8.png',
         price: 18,
@@ -321,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     setState(() {
-      _productosModel = list;
+      _itemModel = list;
     });
   }
 }

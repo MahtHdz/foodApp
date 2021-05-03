@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import 'home.dart';
 void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'yummy_login',
+      title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -19,12 +23,14 @@ class MyLoginPage extends StatefulWidget {
   _MyLoginPageState createState() => _MyLoginPageState();
 }
 class _MyLoginPageState extends State<MyLoginPage> {
+  final _auth = FirebaseAuth.instance;
   bool showProgress = false;
+  String email, password;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Yummy login"),
+        title: Text("Firebase Authentication"),
       ),
       body: Center(
         child: ModalProgressHUD(
@@ -33,7 +39,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                "Login",
+                "Login Page",
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.0),
               ),
               SizedBox(
@@ -42,9 +48,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
               TextField(
                 keyboardType: TextInputType.emailAddress,
                 textAlign: TextAlign.center,
-                onChanged: (value) {},
+                onChanged: (value) {
+                  email = value; // get value from TextField
+                },
                 decoration: InputDecoration(
-                    hintText: "Ingresa tu email",
+                    hintText: "Enter your Email",
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(32.0)))),
               ),
@@ -54,9 +62,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
               TextField(
                 obscureText: true,
                 textAlign: TextAlign.center,
-                onChanged: (value) {},
+                onChanged: (value) {
+                  password = value; //get value from textField
+                },
                 decoration: InputDecoration(
-                    hintText: "Ingresa tu password",
+                    hintText: "Enter your Password",
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(32.0)))),
               ),
@@ -65,23 +75,50 @@ class _MyLoginPageState extends State<MyLoginPage> {
               ),
               Material(
                 elevation: 5,
-                color: Colors.red,
+                color: Colors.lightBlue,
                 borderRadius: BorderRadius.circular(32.0),
                 child: MaterialButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    setState(() {
+                      showProgress = true;
+                    });
+                    try {
+                      final newUser = await _auth.signInWithEmailAndPassword(
+                          email: email, password: password);
+                      print(newUser.toString());
+                      if (newUser != null) {
+                        Fluttertoast.showToast(
+                            msg: "Login Successfull",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.blueAccent,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                        setState(() {
+                          showProgress = false;
+                        });
+                      }
+                    } catch (e) {}
+                    navigateToSubPage(context);
+                  },
                   minWidth: 200.0,
                   height: 45.0,
                   child: Text(
                     "Login",
                     style:
-                    TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0, color: Colors.white),
+                    TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0),
                   ),
                 ),
               )
             ],
-        ),
+          ),
         ),
       ),
     );
+  }
+
+  Future navigateToSubPage(context) async {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => MenuScreen()));
   }
 }
